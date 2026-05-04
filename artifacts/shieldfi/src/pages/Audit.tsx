@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAccount, useWriteContract, usePublicClient } from "wagmi";
+import { useAccount, useWriteContract, usePublicClient, useReadContract } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Search, Lock, ExternalLink, ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
+import { Search, Lock, ExternalLink, ShieldCheck, Loader2, AlertTriangle, Hash } from "lucide-react";
 import { SHIELDFI_ADDRESS, SHIELDFI_ABI, getInvoiceStatus, shortenAddress, type InvoiceMetadata } from "@/lib/contract";
 import { TxStatus } from "@/components/TxStatus";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,14 @@ export default function Audit() {
   const [regulatorStatus, setRegulatorStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
   const [regulatorError, setRegulatorError] = useState<string>();
   const [regulatorTx, setRegulatorTx] = useState<string>();
+
+  // Live invoice counter — shows judges which IDs exist (1 to N)
+  const { data: invoiceCounter } = useReadContract({
+    address: SHIELDFI_ADDRESS,
+    abi: SHIELDFI_ABI,
+    functionName: "invoiceCounter",
+  });
+  const totalInvoices = invoiceCounter ? Number(invoiceCounter) : 0;
 
   async function handleLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -74,7 +82,7 @@ export default function Audit() {
       });
       setBidders(biddersResult);
       if (handleResult) setAmountHandle(handleResult.toString());
-    } catch (err) {
+    } catch {
       setNotFound(true);
     } finally {
       setLoading(false);
@@ -116,19 +124,51 @@ export default function Audit() {
         </div>
       </div>
 
+      {/* Live invoice counter — key info for judges */}
+      <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-500/8 border border-amber-500/20">
+        <Hash className="w-5 h-5 text-amber-400 shrink-0" />
+        <div>
+          {totalInvoices === 0 ? (
+            <p className="text-sm text-slate-400">No invoices on-chain yet — the invoice counter is 0.</p>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-amber-400">
+                {totalInvoices} invoice{totalInvoices !== 1 ? "s" : ""} on-chain
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Valid invoice IDs: <span className="font-mono text-slate-300">1</span> through{" "}
+                <span className="font-mono text-slate-300">{totalInvoices}</span>
+              </p>
+            </>
+          )}
+        </div>
+        <a
+          href={`https://sepolia.etherscan.io/address/${SHIELDFI_ADDRESS}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-auto flex items-center gap-1.5 text-xs text-amber-400/70 hover:text-amber-400 transition-colors"
+        >
+          Etherscan <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+
       {/* Lookup form */}
       <div className="rounded-xl glass border border-white/8 overflow-hidden">
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="font-semibold text-white text-sm">Invoice Lookup</h2>
+          {totalInvoices > 0 && (
+            <p className="text-xs text-slate-500 mt-0.5">Enter an ID between 1 and {totalInvoices}</p>
+          )}
         </div>
         <form onSubmit={handleLookup} className="p-5">
           <div className="flex gap-3">
             <input
               type="number"
-              placeholder="Enter Invoice ID (e.g. 1)"
+              placeholder={totalInvoices > 0 ? `Enter Invoice ID (1–${totalInvoices})` : "Enter Invoice ID (e.g. 1)"}
               value={invoiceId}
               onChange={e => setInvoiceId(e.target.value)}
               min="1"
+              max={totalInvoices || undefined}
               required
               className="flex-1 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30"
             />
@@ -147,7 +187,10 @@ export default function Audit() {
       {notFound && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-yellow-500/8 border border-yellow-500/20 text-yellow-400 text-sm">
           <AlertTriangle className="w-4 h-4 shrink-0" />
-          Invoice #{invoiceId} not found on ShieldFi. Either it doesn't exist or the contract address needs to be updated after deployment.
+          Invoice #{invoiceId} not found on ShieldFi.{" "}
+          {totalInvoices > 0
+            ? `Valid IDs are 1 through ${totalInvoices}.`
+            : "No invoices have been created yet."}
         </div>
       )}
 

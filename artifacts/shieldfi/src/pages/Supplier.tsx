@@ -19,7 +19,6 @@ export default function Supplier() {
   const publicClient = usePublicClient();
   const { toast } = useToast();
 
-  // Form state
   const [buyer, setBuyer] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -27,22 +26,23 @@ export default function Supplier() {
   const [createTxHash, setCreateTxHash] = useState<string>();
   const [createError, setCreateError] = useState<string>();
 
-  // Invoice list
   const [myInvoices, setMyInvoices] = useState<InvoiceMetadata[]>([]);
   const [expandedBids, setExpandedBids] = useState<Set<string>>(new Set());
   const [bidders, setBidders] = useState<Record<string, `0x${string}`[]>>({});
   const [acceptingBid, setAcceptingBid] = useState<string | null>(null);
 
-  // Fetch total invoice count to build list
   const { data: counter, refetch: refetchCounter } = useReadContract({
     address: SHIELDFI_ADDRESS,
     abi: SHIELDFI_ABI,
     functionName: "invoiceCounter",
   });
 
-  async function loadMyInvoices() {
-    if (!address || !counter || !publicClient) return;
-    const total = Number(counter);
+  // Accepts an optional override so we can pass the freshly-fetched count
+  // immediately after a tx confirms, without waiting for React state to sync.
+  async function loadMyInvoices(overrideCount?: number) {
+    if (!address || !publicClient) return;
+    const total = overrideCount ?? (counter ? Number(counter) : 0);
+    if (total === 0) return;
     const results: InvoiceMetadata[] = [];
     for (let i = 1; i <= total; i++) {
       const meta = await publicClient.readContract({
@@ -67,7 +67,7 @@ export default function Supplier() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!address || !isConnected) return;
+    if (!address || !isConnected || !publicClient) return;
     setCreateStatus("pending");
     setCreateError(undefined);
 
@@ -92,12 +92,20 @@ export default function Supplier() {
       });
 
       setCreateTxHash(hash);
+
+      // Wait for on-chain confirmation before reloading the list
+      await publicClient.waitForTransactionReceipt({ hash });
+
       setCreateStatus("success");
       setBuyer("");
       setAmount("");
       setDueDate("");
-      await refetchCounter();
-      loadMyInvoices();
+
+      // Refetch counter and pass the new value directly to avoid stale state
+      const refetched = await refetchCounter();
+      const newCount = refetched.data ? Number(refetched.data) : undefined;
+      await loadMyInvoices(newCount);
+
       toast({ title: "Invoice Created", description: "Confidential invoice submitted to ShieldFi" });
     } catch (err: unknown) {
       setCreateStatus("error");
@@ -134,17 +142,19 @@ export default function Supplier() {
   }
 
   async function handleAcceptBid(invoiceId: bigint, financier: `0x${string}`) {
+    if (!publicClient) return;
     const key = `${invoiceId}-${financier}`;
     setAcceptingBid(key);
     try {
-      await writeContractAsync({
+      const hash = await writeContractAsync({
         address: SHIELDFI_ADDRESS,
         abi: SHIELDFI_ABI,
         functionName: "acceptBid",
         args: [invoiceId, financier],
       });
+      await publicClient.waitForTransactionReceipt({ hash });
       toast({ title: "Bid Accepted", description: `Invoice #${invoiceId} is now financed by ${shortenAddress(financier)}` });
-      loadMyInvoices();
+      await loadMyInvoices();
     } catch (err: unknown) {
       toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to accept bid", variant: "destructive" });
     } finally {
@@ -175,6 +185,11 @@ export default function Supplier() {
           <h1 className="text-xl font-bold text-white">Supplier Dashboard</h1>
           <p className="text-xs text-slate-500 font-mono">{address}</p>
         </div>
+        {counter !== undefined && (
+          <span className="ml-auto text-xs text-slate-500">
+            {Number(counter)} invoice{Number(counter) !== 1 ? "s" : ""} on-chain
+          </span>
+        )}
       </div>
 
       {/* Create Invoice Form */}
@@ -251,7 +266,7 @@ export default function Supplier() {
               className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-semibold text-sm transition-all"
             >
               {createStatus === "pending" ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Encrypting...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Confirming...</>
               ) : (
                 <><Lock className="w-4 h-4" /> Create Confidential Invoice</>
               )}
@@ -272,7 +287,7 @@ export default function Supplier() {
         <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
           <h2 className="font-semibold text-white text-sm">My Invoices</h2>
           <button
-            onClick={loadMyInvoices}
+            onClick={() => loadMyInvoices()}
             className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
           >
             Refresh
@@ -281,7 +296,7 @@ export default function Supplier() {
 
         <InvoiceTable
           invoices={myInvoices}
-          emptyMessage="No invoices yet — create one above"
+          emptyMessage="No invoices yet — create one above or click Refresh"
           actions={(inv) => {
             const status = getInvoiceStatus(inv);
             const key = inv.invoiceId.toString();

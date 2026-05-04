@@ -28,5 +28,14 @@ localPort = 8081
 externalPort = 80
 
 [[ports]]
+localPort = 8082
+externalPort = 3002
+
+[[ports]]
 localPort = 24980
 externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+VITE_INFURA_API_KEY = "e1c0b1ed933b4e498dfd0f306d862161"
