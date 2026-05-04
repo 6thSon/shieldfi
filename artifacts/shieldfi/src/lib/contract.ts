@@ -1,7 +1,7 @@
 import type { Abi } from "viem";
 
 // Contract address — update after deploying to Sepolia with: pnpm --filter @shieldfi/hardhat deploy:sepolia
-export const SHIELDFI_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string}`;
+export const SHIELDFI_ADDRESS = "0xa9315B4331e8bbB385EfB1b9606cE6dD25F3fB7C" as `0x${string}`;
 
 export const CHAIN_ID = 11155111; // Sepolia
 
