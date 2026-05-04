@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "ShieldFi - Confidential SCF dApp"
+version = "1.0.0"
+id = "artifacts/shieldfi"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24980
+
+[services.development]
+run = "pnpm --filter @workspace/shieldfi run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/shieldfi", "run", "build" ]
+publicDir = "artifacts/shieldfi/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24980"
+BASE_PATH = "/"

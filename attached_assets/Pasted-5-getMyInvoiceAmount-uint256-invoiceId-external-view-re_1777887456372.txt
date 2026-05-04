@@ -1,0 +1,46 @@
+5. getMyInvoiceAmount(uint256 invoiceId) external view returns (euint64)
+   - Returns encrypted amount — caller must have been granted access via FHE.allow()
+
+6. regulatorDecrypt(uint256 invoiceId) — only owner, returns handle for full decryption
+
+### CRITICAL FHEVM RULES TO FOLLOW
+- NEVER use euint64 in if/require conditions directly — use FHE.select() for conditional logic on encrypted values
+- ALWAYS call FHE.allowThis(encryptedValue) after storing encrypted state
+- ALWAYS call FHE.allow(encryptedValue, address) for each party that needs to read it
+- Use FHE.fromExternal(inputHandle, inputProof) to convert user inputs — never store externalEuint64 directly
+- euint64 is the correct type for financial amounts (supports up to ~18 quintillion)
+- The contract must extend ZamaEthereumConfig for Sepolia deployment
+
+---
+
+## FRONTEND SPEC
+
+The React frontend must have these 4 pages/views (use tabs or sidebar navigation):
+
+### 1. SUPPLIER DASHBOARD
+- Connect wallet button (RainbowKit already handles this)
+- Form: Create New Invoice
+  - Input: Buyer wallet address
+  - Input: Invoice amount (in USDC equivalent, will be encrypted before sending)  
+  - Input: Days until due
+  - Button: "Create Confidential Invoice"
+  - The frontend must encrypt the amount using fhevmjs before sending to contract
+- Table: My Invoices (invoiceId, buyer address, status: Pending Approval / Approved / Financed)
+- For each approved invoice: show financing bids received (display financier address, allow supplier to "Accept Bid")
+
+### 2. BUYER DASHBOARD  
+- Table: Invoices Awaiting My Approval (pulled from InvoiceCreated events filtered by buyer address)
+- For each invoice: "Approve Invoice" button
+- Status shows: Pending / Approved / Financed
+
+### 3. FINANCIER DASHBOARD
+- Table: All Approved Invoices available for financing (buyer-approved, not yet financed)
+- Invoice shows: invoiceId, supplier address, buyer address, due date (encrypted — show as "Confidential")
+- For each: input field for discount rate (%) + "Submit Encrypted Bid" button
+- The rate is encrypted client-side before sending
+
+### 4. AUDIT / REGULATOR VIEW  
+- Simple panel: enter an invoiceId
+- Shows all public metadata (addresses, status flags)
+- Note: "Full decryption available to authorized regulator via regulatorDecrypt()"
+- Show the encrypted handles (ciphertext references) for transparency

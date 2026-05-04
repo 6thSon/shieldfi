@@ -1,0 +1,26 @@
+{
+  "name": "@shieldfi/hardhat",
+  "version": "0.0.1",
+  "description": "ShieldFi smart contracts — Confidential SCF on Zama FHEVM",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat deploy --network hardhat",
+    "deploy:sepolia": "hardhat deploy --network sepolia",
+    "verify": "hardhat verify --network sepolia"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.17",
+    "hardhat-deploy": "^0.12.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@fhevm/solidity": "^0.7.1",
+    "@openzeppelin/contracts": "^5.0.2"
+  }
+}
