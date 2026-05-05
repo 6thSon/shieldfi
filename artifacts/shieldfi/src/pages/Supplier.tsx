@@ -27,6 +27,7 @@ export default function Supplier() {
   const [createError, setCreateError] = useState<string>();
 
   const [myInvoices, setMyInvoices] = useState<InvoiceMetadata[]>([]);
+  const [amountHandles, setAmountHandles] = useState<Record<string, string>>({});
   const [expandedBids, setExpandedBids] = useState<Set<string>>(new Set());
   const [bidders, setBidders] = useState<Record<string, `0x${string}`[]>>({});
   const [acceptingBid, setAcceptingBid] = useState<string | null>(null);
@@ -63,6 +64,25 @@ export default function Supplier() {
       }
     }
     setMyInvoices(results);
+
+    // Fetch the FHE ciphertext handle for each of the supplier's invoices
+    const handles: Record<string, string> = {};
+    await Promise.all(
+      results.map(async (inv) => {
+        try {
+          const h = await publicClient.readContract({
+            address: SHIELDFI_ADDRESS,
+            abi: SHIELDFI_ABI,
+            functionName: "getMyInvoiceAmount",
+            args: [inv.invoiceId],
+          }) as `0x${string}`;
+          if (h && h !== "0x0000000000000000000000000000000000000000000000000000000000000000") {
+            handles[inv.invoiceId.toString()] = h;
+          }
+        } catch {}
+      })
+    );
+    setAmountHandles(handles);
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -296,6 +316,7 @@ export default function Supplier() {
 
         <InvoiceTable
           invoices={myInvoices}
+          amountHandles={amountHandles}
           emptyMessage="No invoices yet — create one above or click Refresh"
           actions={(inv) => {
             const status = getInvoiceStatus(inv);

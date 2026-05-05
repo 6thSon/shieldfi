@@ -5,7 +5,7 @@ interface InvoiceTableProps {
   invoices: InvoiceMetadata[];
   actions?: (invoice: InvoiceMetadata) => React.ReactNode;
   emptyMessage?: string;
-  showBidders?: boolean;
+  amountHandles?: Record<string, string>;
 }
 
 function StatusBadge({ status }: { status: "pending" | "approved" | "financed" }) {
@@ -14,7 +14,7 @@ function StatusBadge({ status }: { status: "pending" | "approved" | "financed" }
   return <span className="badge-pending">Pending Approval</span>;
 }
 
-export function InvoiceTable({ invoices, actions, emptyMessage }: InvoiceTableProps) {
+export function InvoiceTable({ invoices, actions, emptyMessage, amountHandles }: InvoiceTableProps) {
   if (invoices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-slate-500">
@@ -39,47 +39,61 @@ export function InvoiceTable({ invoices, actions, emptyMessage }: InvoiceTablePr
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
-          {invoices.map((inv) => (
-            <tr key={inv.invoiceId.toString()} className="hover:bg-white/2 transition-colors">
-              <td className="py-3 px-4">
-                <a
-                  href={`https://sepolia.etherscan.io/address/${inv.supplier}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-                >
-                  #{inv.invoiceId.toString()}
-                  <ExternalLink className="w-2.5 h-2.5" />
-                </a>
-              </td>
-              <td className="py-3 px-4 font-mono text-slate-300 text-xs">
-                {shortenAddress(inv.supplier)}
-              </td>
-              <td className="py-3 px-4 font-mono text-slate-300 text-xs">
-                {shortenAddress(inv.buyer)}
-              </td>
-              <td className="py-3 px-4">
-                <span className="badge-encrypted">
-                  <Lock className="w-2.5 h-2.5" />
-                  Confidential
-                </span>
-              </td>
-              <td className="py-3 px-4">
-                <span className="badge-encrypted">
-                  <Lock className="w-2.5 h-2.5" />
-                  Confidential
-                </span>
-              </td>
-              <td className="py-3 px-4">
-                <StatusBadge status={getInvoiceStatus(inv)} />
-              </td>
-              {actions && (
+          {invoices.map((inv) => {
+            const key = inv.invoiceId.toString();
+            const handle = amountHandles?.[key];
+            return (
+              <tr key={key} className="hover:bg-white/2 transition-colors">
                 <td className="py-3 px-4">
-                  {actions(inv)}
+                  <a
+                    href={`https://sepolia.etherscan.io/address/${inv.supplier}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                  >
+                    #{key}
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
                 </td>
-              )}
-            </tr>
-          ))}
+                <td className="py-3 px-4 font-mono text-slate-300 text-xs">
+                  {shortenAddress(inv.supplier)}
+                </td>
+                <td className="py-3 px-4 font-mono text-slate-300 text-xs">
+                  {shortenAddress(inv.buyer)}
+                </td>
+                <td className="py-3 px-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="badge-encrypted">
+                      <Lock className="w-2.5 h-2.5" />
+                      Confidential
+                    </span>
+                    {handle && (
+                      <span
+                        title={handle}
+                        className="font-mono text-[10px] text-cyan-500/70 bg-cyan-500/8 border border-cyan-500/15 rounded px-1.5 py-0.5 cursor-help"
+                      >
+                        handle: {handle.slice(0, 12)}…
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                  <span className="badge-encrypted">
+                    <Lock className="w-2.5 h-2.5" />
+                    Confidential
+                  </span>
+                </td>
+                <td className="py-3 px-4">
+                  <StatusBadge status={getInvoiceStatus(inv)} />
+                </td>
+                {actions && (
+                  <td className="py-3 px-4">
+                    {actions(inv)}
+                  </td>
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

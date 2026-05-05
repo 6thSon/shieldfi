@@ -178,6 +178,10 @@ export default function Financier() {
                           <Lock className="w-2.5 h-2.5" />
                           Confidential
                         </span>
+                        <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed max-w-xs">
+                          Amount is FHE-encrypted. Submit your bid rate based on buyer/supplier creditworthiness.
+                          Amount is revealed to the winning financier after bid acceptance via Zama Gateway decryption.
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-slate-500 mb-1">Due Date</p>
