@@ -1,49 +1,42 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# Dependencies
+node_modules/
+**/node_modules/
 
-# compiled output
-dist
-tmp
-out-tsc
-*.tsbuildinfo
-.expo
-.expo-shared
+# Build output
+dist/
+build/
+**/dist/
+**/build/
 
-# dependencies
-node_modules
+# Environment variables
+.env
+.env.local
+.env.*.local
+**/.env
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+# Replit-specific
+.replit
+replit.nix
+replit.md
+.upm/
+.config/
+.local/
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# Vite / cache
+.vite/
+.cache/
+**/.cache/
 
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
+# Hardhat
+packages/hardhat/artifacts/
+packages/hardhat/cache/
 
-# System Files
+# Lock files (optional — keep pnpm-lock if you want reproducible installs)
+# pnpm-lock.yaml
+
+# OS files
 .DS_Store
 Thumbs.db
 
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
-
-# Replit
-.cache/
-.local/
+# TypeScript build info
+*.tsbuildinfo
