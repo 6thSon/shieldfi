@@ -12,7 +12,7 @@ Industry titans like **Taulia** (acquired by SAP), **C2FO** (the world's largest
 working capital marketplace), and **Greensill Capital** (which collapsed in 2021 
 managing $143B in SCF assets) have proven both the scale and the systemic risk of 
 this market. Blockchain promises to fix the systemic risk through transparency and 
-programmability — but transparency is precisely what makes SCF impossible on public 
+programmability but transparency is precisely what makes SCF impossible on public 
 chains. Every invoice amount, every counterparty relationship, every discount rate 
 is commercially sensitive data. A manufacturer's competitor should never see their 
 contract terms with a major retailer. A financier's pricing model should never be 
@@ -23,8 +23,8 @@ acceptable to institutions.
 
 **ShieldFi is the first full-lifecycle confidential SCF protocol on a public 
 blockchain.** Built on Zama's FHEVM, it runs the complete four-party supply chain 
-finance workflow — invoice creation, buyer approval, competitive financier bidding, 
-and deal acceptance — with every sensitive value encrypted end-to-end. The EVM never 
+finance workflow, invoice creation, buyer approval, competitive financier bidding, 
+and deal acceptance with every sensitive value encrypted end-to-end. The EVM never 
 processes a plaintext number. Institutions get programmable settlement on a public 
 ledger without sacrificing the commercial confidentiality their compliance and 
 competitive requirements demand.
@@ -33,10 +33,10 @@ competitive requirements demand.
 
 Prior confidential finance dApps built on Zama FHEVM established the foundation:
 
-- **BlindPay** (Zama Developer Program Season 1 winner) — confidential merchant 
+- **BlindPay** (Zama Developer Program Season 1 winner) : confidential merchant 
   invoicing and payment. Stops at invoice → pay. No financing step, no multi-party 
   workflow.
-- **Owrent** (ETHRome 2025 Zama track) — sealed-bid auction miniapp for invoice 
+- **Owrent** (ETHRome 2025 Zama track) : sealed-bid auction miniapp for invoice 
   and payroll factoring via group chat. Proof-of-concept for auctions and quick 
   settlement. Single-hop, no buyer approval layer, no regulator access architecture.
 
@@ -54,7 +54,7 @@ ShieldFi builds where they stopped:
 
 ## Why FHE Is Not Optional Here
 
-Zero-knowledge proofs can verify that a computation happened correctly — but they 
+Zero-knowledge proofs can verify that a computation happened correctly, but they 
 cannot compute *on* the encrypted data itself. A ZK system could prove "this invoice 
 is valid" but cannot run competitive bid matching across encrypted amounts from 
 multiple financiers without revealing those amounts first. FHE is the only 
@@ -67,7 +67,7 @@ mathematically possible for the first time.
 - **Contract Address:** `0xa9315B4331e8bbB385EfB1b9606cE6dD25F3fB7C`
 - **Verified Source:** https://sepolia.etherscan.io/address/0xa9315B4331e8bbB385EfB1b9606cE6dD25F3fB7C#code
 - **Deploy Tx:** https://sepolia.etherscan.io/tx/0xbe015733a6339cc516f3d9fe2e8534387c917efbb3438effbd35d0343e7161c0
-- **Live App:** [YOUR REPLIT URL HERE]
+- **Live App:** https://secure-chain-finance--jonahjosemaria.replit.app/
 
 ## Tech Stack
 - Smart Contracts: Solidity + Zama FHEVM (`@fhevm/solidity` v0.11.1)
