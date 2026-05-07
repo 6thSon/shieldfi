@@ -2,7 +2,7 @@
 
 ## The $3 Trillion Problem Nobody Has Solved Onchain
 
-Supply chain finance (SCF) is one of the largest financial markets in the world — 
+Supply chain finance (SCF) is one of the largest financial markets in the world  
 estimated at over $3 trillion annually. The mechanics are simple: a supplier ships 
 goods to a large buyer and issues an invoice payable in 60–90 days. Rather than 
 wait, the supplier sells that invoice to a financier at a small discount, receiving 
@@ -16,7 +16,7 @@ programmability — but transparency is precisely what makes SCF impossible on p
 chains. Every invoice amount, every counterparty relationship, every discount rate 
 is commercially sensitive data. A manufacturer's competitor should never see their 
 contract terms with a major retailer. A financier's pricing model should never be 
-visible to rivals. Today's onchain attempts — Goldfinch, Centrifuge — either retreat 
+visible to rivals. Today's onchain attempts, Goldfinch, Centrifuge, either retreat 
 to private chains, trust centralized intermediaries to hide data, or require 
 suppliers to expose their full financial relationships publicly. None of this is 
 acceptable to institutions.
