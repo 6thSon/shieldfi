@@ -53,6 +53,11 @@ export default defineConfig({
     },
     dedupe: ["react", "react-dom"],
   },
+  optimizeDeps: {
+    // The relayer SDK loads WASM at runtime — exclude it from Vite's
+    // pre-bundling step so the WASM assets are served as-is.
+    exclude: ["@zama-fhe/relayer-sdk", "@zama-fhe/relayer-sdk/web"],
+  },
   root: path.resolve(import.meta.dirname),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),

@@ -8,11 +8,6 @@ import { InvoiceTable } from "@/components/InvoiceTable";
 import { TxStatus } from "@/components/TxStatus";
 import { useToast } from "@/hooks/use-toast";
 
-interface Bid {
-  financier: `0x${string}`;
-  invoiceId: bigint;
-}
-
 export default function Supplier() {
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();

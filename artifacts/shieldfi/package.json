@@ -76,6 +76,7 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.10",
+    "@zama-fhe/relayer-sdk": "^0.4.3",
     "viem": "^2.48.8",
     "wagmi": "^3.6.9"
   }
