@@ -59,7 +59,7 @@ cannot compute *on* the encrypted data itself. A ZK system could prove "this inv
 is valid" but cannot run competitive bid matching across encrypted amounts from 
 multiple financiers without revealing those amounts first. FHE is the only 
 cryptographic primitive that allows the contract to process, compare, and settle 
-on encrypted values without decryption — making confidential multi-party SCF 
+on encrypted values without decryption, making confidential multi-party SCF 
 mathematically possible for the first time.
 
 ## Live Deployment
