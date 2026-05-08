@@ -1,15 +1,28 @@
 import { useState } from "react";
-import { useAccount, useWriteContract, usePublicClient } from "wagmi";
+import { useAccount, useWriteContract, usePublicClient, useSignTypedData } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { UserCheck, Loader2 } from "lucide-react";
+import { UserCheck, Eye, EyeOff, Loader2, ShieldCheck, Lock } from "lucide-react";
 import { SHIELDFI_ADDRESS, SHIELDFI_ABI, getInvoiceStatus, type InvoiceMetadata } from "@/lib/contract";
+import { getFhevmInstance } from "@/lib/fhevm";
 import { InvoiceTable } from "@/components/InvoiceTable";
 import { TxStatus } from "@/components/TxStatus";
 import { useToast } from "@/hooks/use-toast";
 
+type AmountViewState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "done"; valueUsd: string }
+  | { status: "error"; error: string };
+
+function formatCents(val: bigint): string {
+  const dollars = Number(val) / 100;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(dollars);
+}
+
 export default function Buyer() {
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { signTypedDataAsync } = useSignTypedData();
   const publicClient = usePublicClient();
   const { toast } = useToast();
 
@@ -17,6 +30,7 @@ export default function Buyer() {
   const [loading, setLoading] = useState(false);
   const [approving, setApproving] = useState<string | null>(null);
   const [txStatuses, setTxStatuses] = useState<Record<string, { status: "idle" | "pending" | "success" | "error"; hash?: string; error?: string }>>({});
+  const [amountViews, setAmountViews] = useState<Record<string, AmountViewState>>({});
 
   async function loadBuyerInvoices() {
     if (!address || !publicClient) return;
@@ -53,6 +67,68 @@ export default function Buyer() {
       setInvoices(results);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleViewAmount(invoiceId: bigint) {
+    if (!address || !publicClient) return;
+    const key = invoiceId.toString();
+    setAmountViews(prev => ({ ...prev, [key]: { status: "loading" } }));
+
+    try {
+      // 1. Fetch the encrypted handle from the contract (buyer already has FHE.allow)
+      const handle = await publicClient.readContract({
+        address: SHIELDFI_ADDRESS,
+        abi: SHIELDFI_ABI,
+        functionName: "getMyInvoiceAmount",
+        args: [invoiceId],
+      }) as `0x${string}`;
+
+      // 2. Get the FHE instance (already warm from page load)
+      const instance = await getFhevmInstance();
+
+      // 3. Generate an ephemeral keypair for re-encryption
+      const { publicKey, privateKey } = instance.generateKeypair();
+
+      // 4. Build the EIP712 re-encryption permit (1 day validity)
+      const startTimestamp = Math.floor(Date.now() / 1000);
+      const durationDays = 1;
+      const eip712 = instance.createEIP712(publicKey, [SHIELDFI_ADDRESS], startTimestamp, durationDays);
+
+      // 5. Ask the user to sign the permit with their connected wallet
+      const signature = await signTypedDataAsync({
+        domain: eip712.domain as Parameters<typeof signTypedDataAsync>[0]["domain"],
+        // wagmi requires types WITHOUT EIP712Domain
+        types: {
+          UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification,
+        } as Parameters<typeof signTypedDataAsync>[0]["types"],
+        primaryType: eip712.primaryType,
+        message: eip712.message as Record<string, unknown>,
+      });
+
+      // 6. Request decryption via the Zama relayer
+      const results = await instance.userDecrypt(
+        [{ handle, contractAddress: SHIELDFI_ADDRESS }],
+        privateKey,
+        publicKey,
+        signature,
+        [SHIELDFI_ADDRESS],
+        address,
+        startTimestamp,
+        durationDays,
+      );
+
+      // 7. ClearValues is Record<`0x${string}`, bigint | boolean | `0x${string}`>
+      //    The first value is the decrypted euint64 (stored as cents)
+      const decryptedVal = Object.values(results)[0] as bigint;
+      const formatted = formatCents(decryptedVal);
+
+      setAmountViews(prev => ({ ...prev, [key]: { status: "done", valueUsd: formatted } }));
+      toast({ title: "Amount Decrypted", description: `Invoice #${key}: ${formatted}` });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setAmountViews(prev => ({ ...prev, [key]: { status: "error", error: msg } }));
+      toast({ title: "Decryption Failed", description: msg, variant: "destructive" });
     }
   }
 
@@ -104,13 +180,14 @@ export default function Buyer() {
         </div>
       </div>
 
-      {/* Info banner */}
+      {/* Privacy + decrypt info banner */}
       <div className="flex items-start gap-3 p-4 rounded-xl bg-violet-500/8 border border-violet-500/20 text-sm text-slate-300">
-        <UserCheck className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
-        <div>
-          <span className="font-medium text-violet-400">Buyer Privacy Guarantee: </span>
-          The invoice amounts are encrypted and not visible to you or anyone else on-chain.
-          By approving, you confirm you have a legal obligation to pay the supplier — without revealing the amount publicly.
+        <ShieldCheck className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+        <div className="space-y-1">
+          <span className="font-medium text-violet-400">Your Invoice Privacy: </span>
+          The invoice amount is encrypted on-chain using Zama FHE.
+          <strong className="text-slate-200"> Only you and the regulator can view it</strong> — competitors, other financiers, and the public cannot.
+          Use the <em>"View Amount"</em> button to decrypt your specific invoice amount via the Zama Gateway before approving.
         </div>
       </div>
 
@@ -135,33 +212,69 @@ export default function Buyer() {
             const key = inv.invoiceId.toString();
             const status = getInvoiceStatus(inv);
             const txSt = txStatuses[key];
+            const av = amountViews[key] ?? { status: "idle" };
 
             if (status === "financed") {
               return <span className="text-xs text-slate-500">Financed</span>;
             }
-            if (inv.buyerApproved) {
-              return <span className="badge-approved">Approved</span>;
-            }
+
             return (
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleApprove(inv.invoiceId)}
-                  disabled={approving === key}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/15 text-violet-400 border border-violet-500/25 hover:bg-violet-500/25 transition-all text-xs font-medium disabled:opacity-50"
-                >
-                  {approving === key ? (
-                    <><Loader2 className="w-3 h-3 animate-spin" /> Approving...</>
+              <div className="space-y-2 min-w-[180px]">
+                {/* View Amount button — always available to buyer */}
+                <div className="space-y-1.5">
+                  {av.status === "done" ? (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                      <EyeOff className="w-3 h-3 text-violet-400 shrink-0" />
+                      <span className="text-xs font-mono font-semibold text-violet-300">{av.valueUsd}</span>
+                    </div>
                   ) : (
-                    <><UserCheck className="w-3 h-3" /> Approve Invoice</>
+                    <button
+                      onClick={() => handleViewAmount(inv.invoiceId)}
+                      disabled={av.status === "loading"}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 border border-white/10 hover:bg-white/8 hover:border-violet-500/30 transition-all text-xs font-medium disabled:opacity-50 w-full"
+                    >
+                      {av.status === "loading" ? (
+                        <><Loader2 className="w-3 h-3 animate-spin" /> Decrypting...</>
+                      ) : (
+                        <><Eye className="w-3 h-3 text-violet-400" /> View My Invoice Amount</>
+                      )}
+                    </button>
                   )}
-                </button>
-                {txSt && (
-                  <TxStatus
-                    status={txSt.status}
-                    txHash={txSt.hash}
-                    error={txSt.error}
-                    successMessage="Invoice approved"
-                  />
+                  {av.status === "error" && (
+                    <p className="text-[10px] text-red-400 leading-snug">{av.error.slice(0, 80)}</p>
+                  )}
+                </div>
+
+                {/* Approve / approved state */}
+                {inv.buyerApproved ? (
+                  <span className="badge-approved">Approved</span>
+                ) : (
+                  <>
+                    {/* Explanatory note near approve button */}
+                    <div className="flex items-start gap-1.5 text-[10px] text-slate-500 leading-snug max-w-[200px]">
+                      <Lock className="w-2.5 h-2.5 text-slate-600 mt-0.5 shrink-0" />
+                      Amount is FHE-encrypted. Only you &amp; the regulator can view it — competitors &amp; the public cannot.
+                    </div>
+                    <button
+                      onClick={() => handleApprove(inv.invoiceId)}
+                      disabled={approving === key}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/15 text-violet-400 border border-violet-500/25 hover:bg-violet-500/25 transition-all text-xs font-medium disabled:opacity-50"
+                    >
+                      {approving === key ? (
+                        <><Loader2 className="w-3 h-3 animate-spin" /> Approving...</>
+                      ) : (
+                        <><UserCheck className="w-3 h-3" /> Approve Invoice</>
+                      )}
+                    </button>
+                    {txSt && (
+                      <TxStatus
+                        status={txSt.status}
+                        txHash={txSt.hash}
+                        error={txSt.error}
+                        successMessage="Invoice approved"
+                      />
+                    )}
+                  </>
                 )}
               </div>
             );
