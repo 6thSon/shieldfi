@@ -22,7 +22,6 @@ export default function Audit() {
   const [regulatorError, setRegulatorError] = useState<string>();
   const [regulatorTx, setRegulatorTx] = useState<string>();
 
-  // Live invoice counter — shows judges which IDs exist (1 to N)
   const { data: invoiceCounter } = useReadContract({
     address: SHIELDFI_ADDRESS,
     abi: SHIELDFI_ABI,
@@ -115,8 +114,8 @@ export default function Audit() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-          <Search className="w-5 h-5 text-white" />
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center">
+          <Search className="w-5 h-5 text-black" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-white">Audit / Regulator View</h1>
@@ -124,15 +123,15 @@ export default function Audit() {
         </div>
       </div>
 
-      {/* Live invoice counter — key info for judges */}
-      <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-500/8 border border-amber-500/20">
-        <Hash className="w-5 h-5 text-amber-400 shrink-0" />
+      {/* Live invoice counter */}
+      <div className="flex items-center gap-4 p-4 rounded-xl bg-yellow-400/8 border border-yellow-400/20">
+        <Hash className="w-5 h-5 text-yellow-400 shrink-0" />
         <div>
           {totalInvoices === 0 ? (
             <p className="text-sm text-slate-400">No invoices on-chain yet — the invoice counter is 0.</p>
           ) : (
             <>
-              <p className="text-sm font-medium text-amber-400">
+              <p className="text-sm font-medium text-yellow-400">
                 {totalInvoices} invoice{totalInvoices !== 1 ? "s" : ""} on-chain
               </p>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -146,7 +145,7 @@ export default function Audit() {
           href={`https://sepolia.etherscan.io/address/${SHIELDFI_ADDRESS}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-auto flex items-center gap-1.5 text-xs text-amber-400/70 hover:text-amber-400 transition-colors"
+          className="ml-auto flex items-center gap-1.5 text-xs text-yellow-400/70 hover:text-yellow-400 transition-colors"
         >
           Etherscan <ExternalLink className="w-3 h-3" />
         </a>
@@ -170,12 +169,12 @@ export default function Audit() {
               min="1"
               max={totalInvoices || undefined}
               required
-              className="flex-1 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30"
+              className="flex-1 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/30"
             />
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/25 hover:bg-amber-500/25 transition-all text-sm font-medium disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-yellow-400/15 text-yellow-400 border border-yellow-400/25 hover:bg-yellow-400/25 transition-all text-sm font-medium disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               {loading ? "Looking up..." : "Look Up"}
@@ -185,7 +184,7 @@ export default function Audit() {
       </div>
 
       {notFound && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-yellow-500/8 border border-yellow-500/20 text-yellow-400 text-sm">
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-yellow-400/8 border border-yellow-400/20 text-yellow-400 text-sm">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           Invoice #{invoiceId} not found on ShieldFi.{" "}
           {totalInvoices > 0
@@ -204,7 +203,7 @@ export default function Audit() {
                 href={`https://sepolia.etherscan.io/address/${SHIELDFI_ADDRESS}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300"
+                className="flex items-center gap-1.5 text-xs text-yellow-400 hover:text-yellow-300"
               >
                 View on Etherscan <ExternalLink className="w-3 h-3" />
               </a>
@@ -248,8 +247,8 @@ export default function Audit() {
               <div>
                 <p className="text-xs text-slate-500 mb-1.5">Amount Handle (euint64 ciphertext reference)</p>
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/3 border border-white/8">
-                  <Lock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <code className="text-xs text-cyan-300 break-all font-mono">
+                  <Lock className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                  <code className="text-xs text-yellow-300 break-all font-mono">
                     {amountHandle ?? "Encrypted — access not granted to this address"}
                   </code>
                 </div>
@@ -277,16 +276,16 @@ export default function Audit() {
           </div>
 
           {/* Regulator decrypt */}
-          <div className="rounded-xl glass border border-amber-500/15 overflow-hidden">
-            <div className="px-5 py-4 border-b border-amber-500/15 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
+          <div className="rounded-xl glass border border-yellow-400/15 overflow-hidden">
+            <div className="px-5 py-4 border-b border-yellow-400/15 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-yellow-400" />
               <h2 className="font-semibold text-white text-sm">Regulatory Decryption</h2>
-              <span className="ml-auto text-xs text-amber-400/70 font-medium">Owner only</span>
+              <span className="ml-auto text-xs text-yellow-400/70 font-medium">Owner only</span>
             </div>
             <div className="p-5 space-y-4">
               <p className="text-sm text-slate-400">
                 Full decryption of encrypted amounts is available only to the contract owner (regulator) for compliance audits.
-                This calls <code className="text-amber-400 text-xs bg-white/5 px-1.5 py-0.5 rounded">regulatorDecrypt(invoiceId)</code> on-chain,
+                This calls <code className="text-yellow-400 text-xs bg-white/5 px-1.5 py-0.5 rounded">regulatorDecrypt(invoiceId)</code> on-chain,
                 returning the encrypted handle which can then be decrypted via the Zama Gateway.
               </p>
 
@@ -304,7 +303,7 @@ export default function Audit() {
                   <button
                     onClick={handleRegulatorDecrypt}
                     disabled={regulatorStatus === "pending"}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/25 hover:bg-amber-500/25 transition-all text-sm font-medium disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-yellow-400/15 text-yellow-400 border border-yellow-400/25 hover:bg-yellow-400/25 transition-all text-sm font-medium disabled:opacity-50"
                   >
                     {regulatorStatus === "pending" ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
@@ -335,7 +334,7 @@ export default function Audit() {
             href={`https://sepolia.etherscan.io/address/${SHIELDFI_ADDRESS}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-amber-400/70 hover:text-amber-400 transition-colors"
+            className="text-yellow-400/70 hover:text-yellow-400 transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
           </a>

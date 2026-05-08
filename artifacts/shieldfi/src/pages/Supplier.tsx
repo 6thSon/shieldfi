@@ -33,8 +33,6 @@ export default function Supplier() {
     functionName: "invoiceCounter",
   });
 
-  // Accepts an optional override so we can pass the freshly-fetched count
-  // immediately after a tx confirms, without waiting for React state to sync.
   async function loadMyInvoices(overrideCount?: number) {
     if (!address || !publicClient) return;
     const total = overrideCount ?? (counter ? Number(counter) : 0);
@@ -60,7 +58,6 @@ export default function Supplier() {
     }
     setMyInvoices(results);
 
-    // Fetch the FHE ciphertext handle for each of the supplier's invoices
     const handles: Record<string, string> = {};
     await Promise.all(
       results.map(async (inv) => {
@@ -107,8 +104,6 @@ export default function Supplier() {
       });
 
       setCreateTxHash(hash);
-
-      // Wait for on-chain confirmation before reloading the list
       await publicClient.waitForTransactionReceipt({ hash });
 
       setCreateStatus("success");
@@ -116,7 +111,6 @@ export default function Supplier() {
       setAmount("");
       setDueDate("");
 
-      // Refetch counter and pass the new value directly to avoid stale state
       const refetched = await refetchCounter();
       const newCount = refetched.data ? Number(refetched.data) : undefined;
       await loadMyInvoices(newCount);
@@ -180,7 +174,7 @@ export default function Supplier() {
   if (!isConnected) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 flex flex-col items-center gap-6">
-        <Building2 className="w-12 h-12 text-cyan-400" />
+        <Building2 className="w-12 h-12 text-yellow-400" />
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white">Supplier Dashboard</h1>
           <p className="text-slate-400 mt-2">Connect your wallet to create and manage confidential invoices</p>
@@ -193,8 +187,8 @@ export default function Supplier() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-          <Building2 className="w-5 h-5 text-white" />
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center">
+          <Building2 className="w-5 h-5 text-black" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-white">Supplier Dashboard</h1>
@@ -210,7 +204,7 @@ export default function Supplier() {
       {/* Create Invoice Form */}
       <div className="rounded-xl glass border border-white/8 overflow-hidden">
         <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
-          <Plus className="w-4 h-4 text-cyan-400" />
+          <Plus className="w-4 h-4 text-yellow-400" />
           <h2 className="font-semibold text-white text-sm">Create Confidential Invoice</h2>
           <span className="badge-encrypted ml-auto">
             <Lock className="w-2.5 h-2.5" />
@@ -227,7 +221,7 @@ export default function Supplier() {
                 value={buyer}
                 onChange={e => setBuyer(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 font-mono"
+                className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/30 font-mono"
               />
             </div>
             <div className="space-y-1.5">
@@ -246,7 +240,7 @@ export default function Supplier() {
                 required
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30"
+                className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/30"
               />
             </div>
             <div className="space-y-1.5">
@@ -265,7 +259,7 @@ export default function Supplier() {
                 required
                 min="1"
                 max="365"
-                className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30"
+                className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/30"
               />
             </div>
           </div>
@@ -278,7 +272,7 @@ export default function Supplier() {
             <button
               type="submit"
               disabled={createStatus === "pending"}
-              className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-semibold text-sm transition-all"
+              className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold text-sm transition-all"
             >
               {createStatus === "pending" ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Confirming...</>
@@ -303,7 +297,7 @@ export default function Supplier() {
           <h2 className="font-semibold text-white text-sm">My Invoices</h2>
           <button
             onClick={() => loadMyInvoices()}
-            className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors"
           >
             Refresh
           </button>
@@ -327,7 +321,7 @@ export default function Supplier() {
                 <div className="space-y-2">
                   <button
                     onClick={() => toggleBids(inv.invoiceId)}
-                    className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-yellow-400 hover:text-yellow-300 transition-colors"
                   >
                     {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                     {bids.length > 0 ? `${bids.length} bid(s)` : "View bids"}
@@ -343,7 +337,7 @@ export default function Supplier() {
                           <button
                             onClick={() => handleAcceptBid(inv.invoiceId, financier)}
                             disabled={acceptingBid === `${inv.invoiceId}-${financier}`}
-                            className="text-xs px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/25 transition-all disabled:opacity-50"
+                            className="text-xs px-2.5 py-1 rounded bg-yellow-400/15 text-yellow-400 border border-yellow-400/25 hover:bg-yellow-400/25 transition-all disabled:opacity-50"
                           >
                             {acceptingBid === `${inv.invoiceId}-${financier}` ? <Loader2 className="w-3 h-3 animate-spin inline" /> : "Accept Bid"}
                           </button>
