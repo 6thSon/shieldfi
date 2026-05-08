@@ -1,47 +1,62 @@
 /**
- * FHEVM Client-Side Encryption — powered by @zama-fhe/relayer-sdk
+ * FHEVM Client-Side Encryption — @zama-fhe/relayer-sdk v0.4.3
  *
- * Uses the Zama relayer to perform real FHE encryption on Sepolia before
- * submitting any transaction. The relayer generates a ZK proof alongside the
- * ciphertext handle, which the ShieldFi contract validates via FHE.fromExternal().
+ * Correct initialization sequence for Sepolia browser environment:
+ *  1. initSDK({ thread: 0 }) — loads WASM without SharedArrayBuffer/workers
+ *  2. createInstance({ explicit addresses, relayerUrl, relayerRouteVersion: 2, network })
  *
- * Docs: https://docs.zama.ai/protocol/getting-started/frontend
+ * Import from /web (lib/web.js) which is the real ES module.
+ * /bundle is only a 3-line window.relayerSDK proxy for <script> tag usage.
  */
 
-import { createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/web";
+import { initSDK, createInstance } from "@zama-fhe/relayer-sdk/web";
 
 export interface EncryptedInput {
   handle: `0x${string}`;
   inputProof: `0x${string}`;
 }
 
-// Singleton instance promise — initialised once and reused across all calls
+// Singleton — initialised once on first use, reused for all subsequent encryptions
 let instancePromise: ReturnType<typeof createInstance> | null = null;
 
-function getNetworkUrl(): string {
-  const key = import.meta.env.VITE_INFURA_API_KEY ?? "";
-  return `https://sepolia.infura.io/v3/${key}`;
-}
+// All Sepolia contract addresses pinned explicitly (sourced from SepoliaConfig)
+// plus relayer settings that work in browser context.
+const SEPOLIA_CONFIG = {
+  chainId: 11155111,
+  gatewayChainId: 10901,
+  relayerUrl: "https://relayer.testnet.zama.org",
+  relayerRouteVersion: 2 as const,
+  kmsContractAddress:                       "0xbE0E383937d564D7FF0BC3b46c51f0bF8d5C311A",
+  aclContractAddress:                       "0xf0Ffdc93b7E186bC2f8CB3dAA75D86d1930A433D",
+  inputVerifierContractAddress:             "0xBBC1fFCdc7C316aAAd72E807D9b0272BE8F84DA0",
+  verifyingContractAddressDecryption:       "0x5D8BD78e2ea6bbE41f26dFe9fdaEAa349e077478",
+  verifyingContractAddressInputVerification:"0x483b9dE06E4E4C7D35CCf5837A1668487406D955",
+  // Public Sepolia RPC — no API key needed, avoids Infura key dependency at WASM init time
+  network: "https://ethereum-sepolia-rpc.publicnode.com",
+};
 
-/**
- * Returns (and lazily initialises) the fhevm instance.
- * SepoliaConfig supplies all pre-configured contract addresses and the relayer URL
- * (https://relayer.testnet.zama.org) — we only need to add the RPC endpoint.
- */
 export function getFhevmInstance(): ReturnType<typeof createInstance> {
   if (!instancePromise) {
-    instancePromise = createInstance({
-      ...SepoliaConfig,
-      network: getNetworkUrl(),
-    });
+    instancePromise = (async () => {
+      console.log("[ShieldFi] FHE init: calling initSDK({ thread: 0 })...");
+      // Must call initSDK first — loads the WASM modules (tfhe, tkms)
+      // thread: 0 disables multi-threading (no SharedArrayBuffer required in browser)
+      await initSDK({ thread: 0 });
+      console.log("[ShieldFi] FHE init: initSDK done, calling createInstance...");
+
+      const instance = await createInstance(SEPOLIA_CONFIG);
+
+      console.log("[ShieldFi] FHE instance created successfully via Zama relayer");
+      return instance;
+    })();
   }
   return instancePromise;
 }
 
 /**
- * Encrypts a uint64 value (invoice amount in USDC cents, or discount rate × 100)
- * using the Zama relayer SDK.  Returns the 32-byte ciphertext handle and the
- * associated ZK input-proof that the ShieldFi contract will verify on-chain.
+ * Encrypts a uint64 value using the Zama relayer SDK.
+ * Returns the 32-byte ciphertext handle and the ZK input-proof that
+ * ShieldFi.sol validates on-chain via FHE.fromExternal().
  */
 export async function encryptUint64(
   value: bigint,
@@ -53,8 +68,7 @@ export async function encryptUint64(
   const input = instance.createEncryptedInput(contractAddress, userAddress);
   input.add64(value);
 
-  // encrypt() is async in the relayer SDK — it contacts the relayer to get
-  // the ZK proof signed by the Zama coprocessors
+  // encrypt() contacts the Zama relayer — gets ZK proof co-signed by coprocessors
   const { handles, inputProof } = await input.encrypt();
 
   const toHex = (bytes: Uint8Array): `0x${string}` =>
