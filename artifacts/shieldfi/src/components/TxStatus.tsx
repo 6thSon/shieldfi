@@ -14,7 +14,7 @@ export function TxStatus({ status, txHash, error, successMessage }: TxStatusProp
 
   return (
     <div className={`flex items-start gap-3 p-3 rounded-lg text-sm border ${
-      status === "pending" ? "bg-cyan-500/10 border-cyan-500/25 text-cyan-300" :
+      status === "pending" ? "bg-yellow-400/10 border-yellow-400/25 text-yellow-300" :
       status === "success" ? "bg-green-500/10 border-green-500/25 text-green-300" :
       "bg-red-500/10 border-red-500/25 text-red-300"
     }`}>

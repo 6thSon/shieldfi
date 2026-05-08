@@ -14,8 +14,8 @@ export function Nav() {
     <header className="sticky top-0 z-50 w-full glass border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2 shrink-0 mr-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center">
-            <ShieldCheck className="w-4 h-4 text-white" />
+          <div className="w-7 h-7 rounded-lg bg-yellow-400 flex items-center justify-center">
+            <ShieldCheck className="w-4 h-4 text-black" />
           </div>
           <span className="font-bold text-white tracking-tight">ShieldFi</span>
         </Link>
@@ -29,7 +29,7 @@ export function Nav() {
                 href={href}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25"
+                    ? "bg-yellow-400/15 text-yellow-400 border border-yellow-400/25"
                     : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
                 }`}
               >

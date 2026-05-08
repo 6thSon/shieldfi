@@ -32,27 +32,30 @@
 }
 
 :root {
-  --background: 222 47% 8%;
-  --foreground: 210 40% 96%;
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 96%;
-  --border: 217 32% 20%;
-  --input: 217 32% 16%;
-  --ring: 199 89% 48%;
-  --primary: 199 89% 48%;
-  --primary-foreground: 222 47% 6%;
-  --secondary: 217 32% 17%;
-  --secondary-foreground: 210 40% 90%;
-  --muted: 217 32% 14%;
-  --muted-foreground: 215 20% 55%;
-  --accent: 262 80% 65%;
-  --accent-foreground: 210 40% 98%;
+  /* True black background (#0a0a0a) */
+  --background: 0 0% 4%;
+  --foreground: 0 0% 98%;
+  /* Surface cards (#1a1a1a) */
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 98%;
+  --border: 0 0% 16%;
+  --input: 0 0% 12%;
+  /* Zama yellow-400 (#FBBF24) */
+  --ring: 43 96% 56%;
+  --primary: 43 96% 56%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 14%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 43 96% 56%;
+  --accent-foreground: 0 0% 4%;
   --destructive: 0 72% 51%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 0 0% 98%;
   --success: 142 71% 45%;
-  --success-foreground: 210 40% 98%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 222 47% 8%;
+  --success-foreground: 0 0% 98%;
+  --warning: 43 96% 56%;
+  --warning-foreground: 0 0% 4%;
   --app-font-sans: 'Inter', 'system-ui', sans-serif;
   --app-font-mono: 'JetBrains Mono', 'Menlo', monospace;
   --radius: 0.625rem;
@@ -65,8 +68,8 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.08), transparent),
-      radial-gradient(ellipse 50% 80% at 80% 50%, rgba(99, 102, 241, 0.05), transparent);
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(251, 191, 36, 0.07), transparent),
+      radial-gradient(ellipse 50% 80% at 80% 50%, rgba(251, 191, 36, 0.03), transparent);
     background-attachment: fixed;
   }
 }
@@ -78,13 +81,16 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
   .glow-cyan {
-    box-shadow: 0 0 30px -5px rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 30px -5px rgba(251, 191, 36, 0.35);
+  }
+  .glow-yellow {
+    box-shadow: 0 0 30px -5px rgba(251, 191, 36, 0.35);
   }
   .glow-purple {
-    box-shadow: 0 0 30px -5px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 30px -5px rgba(251, 191, 36, 0.25);
   }
   .text-gradient {
-    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    background: linear-gradient(135deg, #FBBF24 0%, #FCD34D 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -103,15 +109,15 @@
   }
   .badge-financed {
     @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium;
-    background: rgba(139, 92, 246, 0.12);
-    color: rgb(167, 139, 250);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(251, 191, 36, 0.12);
+    color: rgb(252, 211, 77);
+    border: 1px solid rgba(251, 191, 36, 0.3);
   }
   .badge-encrypted {
     @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium;
-    background: rgba(14, 165, 233, 0.12);
-    color: rgb(56, 189, 248);
-    border: 1px solid rgba(14, 165, 233, 0.25);
+    background: rgba(251, 191, 36, 0.10);
+    color: rgb(251, 191, 36);
+    border: 1px solid rgba(251, 191, 36, 0.22);
   }
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -119,12 +125,12 @@
   }
 }
 
-/* RainbowKit override — dark theme */
+/* RainbowKit override — Zama yellow theme */
 [data-rk] {
-  --rk-colors-accentColor: #0ea5e9 !important;
-  --rk-colors-accentColorForeground: #0c1526 !important;
-  --rk-colors-connectButtonBackground: #1e293b !important;
+  --rk-colors-accentColor: #FBBF24 !important;
+  --rk-colors-accentColorForeground: #0a0a0a !important;
+  --rk-colors-connectButtonBackground: #1a1a1a !important;
   --rk-colors-connectButtonText: #f1f5f9 !important;
-  --rk-colors-modalBackground: #0f172a !important;
-  --rk-colors-menuItemBackground: #1e293b !important;
+  --rk-colors-modalBackground: #0a0a0a !important;
+  --rk-colors-menuItemBackground: #1a1a1a !important;
 }

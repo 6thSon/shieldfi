@@ -49,7 +49,7 @@ export function InvoiceTable({ invoices, actions, emptyMessage, amountHandles }:
                     href={`https://sepolia.etherscan.io/address/${inv.supplier}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                    className="font-mono text-yellow-400 hover:text-yellow-300 flex items-center gap-1"
                   >
                     #{key}
                     <ExternalLink className="w-2.5 h-2.5" />
@@ -70,7 +70,7 @@ export function InvoiceTable({ invoices, actions, emptyMessage, amountHandles }:
                     {handle && (
                       <span
                         title={handle}
-                        className="font-mono text-[10px] text-cyan-500/70 bg-cyan-500/8 border border-cyan-500/15 rounded px-1.5 py-0.5 cursor-help"
+                        className="font-mono text-[10px] text-yellow-400/70 bg-yellow-400/8 border border-yellow-400/15 rounded px-1.5 py-0.5 cursor-help"
                       >
                         handle: {handle.slice(0, 12)}…
                       </span>
