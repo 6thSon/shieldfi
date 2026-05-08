@@ -62,6 +62,20 @@ cryptographic primitive that allows the contract to process, compare, and settle
 on encrypted values without decryption, making confidential multi-party SCF 
 mathematically possible for the first time.
 
+### How to Run Locally
+1. Clone this repository
+2. `pnpm install`
+3. **Hardhat contracts**  
+   ```bash
+   cd packages/hardhat
+   pnpm install
+Add your MNEMONIC and INFURA_API_KEY to packages/hardhat/.env
+
+4. Frontend - The complete React + Vite frontend lives in artifacts/shieldfi/.
+You can open artifacts/shieldfi/index.html directly, or run the live version:
+Live App: https://secure-chain-finance--jonahjosemaria.replit.app/
+5. Connect MetaMask to Sepolia testnet (chainId: 11155111)
+
 ## Live Deployment
 - **Network:** Ethereum Sepolia Testnet
 - **Contract Address:** `0xa9315B4331e8bbB385EfB1b9606cE6dD25F3fB7C`
@@ -80,16 +94,6 @@ mathematically possible for the first time.
 - **Buyer** — approves invoices onchain confirming the debt obligation  
 - **Financier** — browses approved invoices, submits encrypted discount rate bids
 - **Regulator** — contract owner can trigger authorized decryption for compliance audit
-
-## How to Run Locally
-1. Clone this repository
-2. `cd packages/hardhat && npm install`
-3. Add `MNEMONIC` and `INFURA_API_KEY` to `packages/hardhat/.env`
-4. `npm run compile && npm run deploy:sepolia`
-5. `cd packages/nextjs && npm install`
-6. Add `VITE_INFURA_API_KEY=your_key` to `packages/nextjs/.env`
-7. `npm run dev` → open http://localhost:5173
-8. Connect MetaMask to Sepolia (chainId: 11155111)
 
 ## Built With
 - [Zama FHEVM Protocol](https://docs.zama.org/protocol)
